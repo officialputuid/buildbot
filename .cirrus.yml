@@ -12,8 +12,8 @@ task:
     run_script: # To sync sourcea
       - apt update && DEBIAN_FRONTEND="noninteractive" TZ="Asia/Makassar" apt-get install -y tzdata curl git sudo
       - bash <(curl https://raw.githubusercontent.com/officialputuid/scripts/master/setup/android_build_env.sh)
-      - git config --global user.name officialputuid
-      - git config --global user.email officialputuid@hack.id
+      - git config --global user.name Your Name
+      - git config --global user.email you@example.com
       - /usr/local/bin/repo init --depth=1 -u https//github.com/exthmui/android.git -b exthm-11 -g default,-device,-mips,-darwin,-notdefault
       - git clone https://github.com/officialputuid/local_manifest.git --depth 1 -b 11-test .repo/local_manifests
       - /usr/local/bin/repo sync -c -j8 --force-sync --no-clone-bundle --no-tags --optimized-fetch --prune
