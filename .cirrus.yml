@@ -1,6 +1,6 @@
 task:
     name: buildbot
-    timeout_in: 5h
+    timeout_in: 7h
     container:
       image: ubuntu:latest
       cpu: 8
@@ -12,14 +12,14 @@ task:
     run_script: # To sync sourcea
       - apt update && DEBIAN_FRONTEND="noninteractive" TZ="Asia/Makassar" apt-get install -y tzdata curl git sudo
       - bash <(curl https://raw.githubusercontent.com/officialputuid/scripts/master/setup/android_build_env.sh)
-      - git config --global user.name Your Name
-      - git config --global user.email you@example.com
+      - git config --global user.name officialputuid
+      - git config --global user.email officialputuid@hack.id
       - /usr/local/bin/repo init --depth=1 -u https://github.com/exthmui/android -b exthm-11 -g default,-device,-mips,-darwin,-notdefault
       - git clone https://github.com/officialputuid/local_manifest.git --depth 1 -b 11-test .repo/local_manifests
       - /usr/local/bin/repo sync -c -j8 --force-sync --no-clone-bundle --no-tags --optimized-fetch --prune
       - export CCACHE_EXEC=$(which ccache)
       - export USE_CCACHE=1
-      - ccache -M 20G
+      - ccache -M 50G
       - ccache -z
       - source build/envsetup.sh
       - lunch exthm_RMX2001-userdebug
