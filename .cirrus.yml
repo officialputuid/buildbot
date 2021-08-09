@@ -1,33 +1,28 @@
 task:
     name: buildbot
-    timeout_in: 120m
+    timeout_in: 5h
     container:
       image: ubuntu:latest
-      cpu: 8  
-      memory: 32G 
-    run_script: # To sync source
-      - apt update && DEBIAN_FRONTEND="noninteractive" TZ="America/New_York" apt-get install -y tzdata
-      - apt upgrade -y
-      - apt-get install git-core gnupg flex bison build-essential zip curl zlib1g-dev gcc-multilib g++-multilib libncurses5 libc6-dev-i386 libncurses5-dev lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z1-dev python-is-python3 libgl1-mesa-dev libxml2-utils ccache xsltproc unzip fontconfig -y
-      - mkdir ~/bin
-      - PATH=~/bin:$PATH
-      - curl https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
-      - chmod a+x ~/bin/repo
+      cpu: 8
+      memory: 32G
+      volumes:
+          - /home/cirrus/roms:/home/cirrus/roms
+          - /home/cirrus/ccache:/home/cirrus/ccache
+          - /home/cirrus/.config:/home/cirrus/.config
+    run_script: # To sync sourcea
+      - apt update && DEBIAN_FRONTEND="noninteractive" TZ="Asia/Makassar" apt-get install -y tzdata curl git sudo
+      - bash <(curl https://raw.githubusercontent.com/officialputuid/scripts/master/setup/android_build_env.sh)
       - git config --global user.name officialputuid
       - git config --global user.email officialputuid@hack.id
-      - /usr/sbin/update-ccache-symlinks
-      - echo 'export PATH="/usr/lib/ccache:$PATH"' | tee -a ~/.bashrc
-      - source ~/.bashrc && echo $PATH
-      - ~/bin/repo init --depth=1 -u git://github.com/exthmui/android.git -b exthm-11
-      - ~/bin/repo sync -c -j7 --force-sync --no-clone-bundle --no-tags --optimized-fetch --prune --force-broken
-      - git clone https://github.com/officialputuid/android_device_realme_mt6785-common -b 11-test device/realme/mt6785-common
-      - git clone https://github.com/officialputuid/android_device_realme_RMX2001 -b 11-exthmui device/realme/RMX2001
-      - git clone https://github.com/officialputuid/android_kernel_realme_RMX2001 -b 11 --depth=1 kernel/realme/RMX2001
-      - git clone https://github.com/officialputuid/proprietary_vendor_realme -b 11 vendor/realme
-      - git clone https://github.com/officialputuid/android_packages_apps_RealmeDirac -b 11 packages/apps/RealmeDirac
-      - git clone https://github.com/officialputuid/android_packages_apps_RealmeParts -b 11 packages/apps/RealmeParts
-      - . build/envsetup.sh
+      - /usr/local/bin/repo init --depth=1 -u https//github.com/exthmui/android.git -b exthm-11 -g default,-device,-mips,-darwin,-notdefault
+      - git clone https://github.com/officialputuid/local_manifest.git --depth 1 -b 11-test .repo/local_manifests
+      - /usr/local/bin/repo sync -c -j8 --force-sync --no-clone-bundle --no-tags --optimized-fetch --prune
+      - export CCACHE_EXEC=$(which ccache)
+      - export USE_CCACHE=1
+      - ccache -M 20G
+      - ccache -z
+      - source build/envsetup.sh
       - lunch exthm_RMX2001-userdebug
-      - mka bacon -j$(nproc --all)
+      - mka bacon -j8
       - up=out/target/product/RMX2001/*.zip
       - curl --upload-file $up https://transfer.sh/$($up); echo
